@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: distributed-app-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: distributed-app
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: distributed-app
+        track: canary
+    spec:
+      containers:
+        - name: distributed-app
+          image: distributed-app:v3
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: APP_VERSION
+              value: "v3"
+            - name: COUNTER_URL
+              value: "http://counter-service:4000"
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 2
+            periodSeconds: 3
